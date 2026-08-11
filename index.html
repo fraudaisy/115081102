@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小小理財冒險王 - 四年級金錢規劃與價值觀遊戲</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', system-ui, -apple-system, sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+        }
+        .bounce-light {
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-3%); }
+            50% { transform: translateY(0); }
+        }
+        .water-animation {
+            transition: height 0.8s ease-in-out, background-color 0.5s ease;
+        }
+        .wiggle {
+            animation: wiggle 0.5s ease-in-out;
+        }
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-5deg); }
+            75% { transform: rotate(5deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 flex flex-col justify-between">
+
+    <!-- 頂部導覽與得分列 -->
+    <header class="bg-emerald-600 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🪙</span>
+                <h1 class="text-xl md:text-2xl font-black tracking-wide">小小理財冒險王</h1>
+            </div>
+            <div class="flex items-center gap-4 text-sm md:text-base font-bold">
+                <div id="scoreDisplay" class="bg-emerald-700 px-3 py-1.5 rounded-full flex items-center gap-1">
+                    <span>🌟 冒險積分:</span>
+                    <span id="scoreVal" class="text-yellow-300">0</span>
+                </div>
+                <button id="soundToggle" onclick="toggleSound()" class="bg-emerald-500 hover:bg-emerald-400 px-2.5 py-1.5 rounded-lg text-lg transition">
+                    🔊
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主遊戲容器 -->
+    <main class="max-w-4xl mx-auto w-full px-4 py-6 flex-grow flex flex-col justify-center">
+
+        <!-- 0. 歡迎與準備頁面 -->
+        <section id="screen-welcome" class="bg-white rounded-3xl p-6 md:p-10 shadow-xl text-center border-4 border-emerald-200">
+            <div class="text-6xl mb-4 bounce-light">🧙‍♂️</div>
+            <h2 class="text-2xl md:text-3xl font-black text-emerald-700 mb-3">歡迎來到金錢奇幻王國！</h2>
+            <p class="text-slate-600 md:text-lg mb-6 leading-relaxed">
+                我是理財小精靈「智智」。四年級的理財冒險家，準備好挑戰五個關卡，學習**「需要與想要」**、**「聰明儲蓄」**、**「珍貴信用」**與**「防詐絕招」**了嗎？
+            </p>
+            <div class="max-w-sm mx-auto mb-6 text-left">
+                <label class="block font-bold text-slate-700 mb-2">請輸入你的冒險家名字：</label>
+                <input type="text" id="playerNameInput" value="小勇士" class="w-full text-center text-lg font-bold px-4 py-3 border-2 border-emerald-400 rounded-xl focus:outline-none focus:ring-4 focus:ring-emerald-200">
+            </div>
+            <button onclick="startGame()" class="bg-amber-500 hover:bg-amber-600 text-white font-black text-xl px-8 py-4 rounded-2xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition duration-200">
+                🚀 開始理財大冒險！
+            </button>
+        </section>
+
+        <!-- 1. 關卡一：冰箱分類大作戰 -->
+        <section id="screen-level-1" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-blue-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-slate-100">
+                <span class="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm">關卡 1 / 5</span>
+                <span class="text-slate-500 font-bold text-sm">【大秘寶挑戰】冰箱分類大作戰</span>
+            </div>
+            <p class="text-center font-bold text-slate-700 text-base md:text-lg mb-4">
+                請將出現的物品正確拖動或點擊分類至**「需要」**或**「想要」**的籃子中！
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <!-- 物品提示卡片 -->
+                <div id="l1-item-card" class="md:col-span-2 bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 text-center shadow-inner">
+                    <div id="l1-item-icon" class="text-6xl mb-2">🥛</div>
+                    <div id="l1-item-title" class="text-xl font-black text-slate-800">快過期的鮮奶</div>
+                    <div id="l1-item-desc" class="text-slate-600 text-sm mt-1">冰箱裡的鮮奶已經喝完了，這是成長需要的營養來源。</div>
+                </div>
+            </div>
+
+            <!-- 分類選擇按鈕 -->
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="checkLevel1Choice('need')" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black p-5 rounded-2xl shadow-md text-xl flex flex-col items-center gap-2 hover:scale-105 transition">
+                    <span class="text-3xl">🥦</span>
+                    <span>【 需要 】</span>
+                    <span class="text-xs font-normal opacity-90">生活必需、維持健康</span>
+                </button>
+                <button onclick="checkLevel1Choice('want')" class="bg-purple-500 hover:bg-purple-600 text-white font-black p-5 rounded-2xl shadow-md text-xl flex flex-col items-center gap-2 hover:scale-105 transition">
+                    <span class="text-3xl">🎁</span>
+                    <span>【 想要 】</span>
+                    <span class="text-xs font-normal opacity-90">想要更好、慾望滿足</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. 關卡二：阿飛的夢想儲蓄模擬器 -->
+        <section id="screen-level-2" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-amber-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-slate-100">
+                <span class="bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full text-sm">關卡 2 / 5</span>
+                <span class="text-slate-500 font-bold text-sm">【阿飛的抉擇】夢想儲蓄模擬器</span>
+            </div>
+
+            <div class="bg-amber-50 p-4 rounded-2xl mb-4 text-center">
+                <p class="font-bold text-amber-900">🎯 目標：4 週內存夠 <span class="text-red-600 text-xl font-black">$700</span> 元買特價籃球！</p>
+                <p class="text-xs text-amber-700 mt-1">💡 理財黃金公式：<strong class="text-emerald-700">收入 － 儲蓄 ＝ 支出</strong> (必須先扣儲蓄！)</p>
+            </div>
+
+            <!-- 週狀態 -->
+            <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+                <div class="bg-slate-100 p-2 rounded-xl">
+                    <div class="text-xs text-slate-500">當前週數</div>
+                    <div id="l2-week-display" class="font-black text-amber-600">第 1 週</div>
+                </div>
+                <div class="bg-slate-100 p-2 rounded-xl">
+                    <div class="text-xs text-slate-500">每週零用錢(收入)</div>
+                    <div class="font-black text-slate-700">$200</div>
+                </div>
+                <div class="bg-slate-100 p-2 rounded-xl">
+                    <div class="text-xs text-slate-500">已存金額 / 目標</div>
+                    <div id="l2-savings-display" class="font-black text-emerald-600">$0 / $700</div>
+                </div>
+            </div>
+
+            <!-- 互動區域 -->
+            <div class="bg-orange-50 border-2 border-orange-200 rounded-2xl p-4 mb-4">
+                <h3 class="font-bold text-slate-800 mb-2 text-center" id="l2-step-title">步驟 1：請執行「優先儲蓄」</h3>
+                <div id="l2-interactive-area" class="flex flex-col items-center gap-3">
+                    <!-- 動態渲染介面 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 關卡三：神奇信用水杯 -->
+        <section id="screen-level-3" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-cyan-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-slate-100">
+                <span class="bg-cyan-100 text-cyan-800 font-bold px-3 py-1 rounded-full text-sm">關卡 3 / 5</span>
+                <span class="text-slate-500 font-bold text-sm">【信用冒險】神奇信用水杯</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <!-- 水杯 SVG 視覺展示 -->
+                <div class="flex flex-col items-center">
+                    <div class="relative w-32 h-48 border-4 border-slate-700 rounded-b-3xl overflow-hidden bg-slate-100 shadow-inner">
+                        <div id="waterCup" class="absolute bottom-0 w-full bg-cyan-400 water-animation flex items-center justify-center text-white font-black text-lg" style="height: 60%;">
+                            <span id="waterText">60 cc</span>
+                        </div>
+                    </div>
+                    <span class="font-bold text-slate-700 mt-2">💧 信用水杯 (上限 100cc)</span>
+                </div>
+
+                <!-- 情境問題 -->
+                <div class="md:col-span-2">
+                    <div id="l3-scenario-box" class="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 mb-4">
+                        <span class="text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-1 rounded-md">校園生活情境</span>
+                        <h4 id="l3-title" class="font-bold text-lg text-slate-800 mt-2 mb-1">向同學借了 10 元買牛奶...</h4>
+                        <p id="l3-desc" class="text-sm text-slate-600">你答應隔天一定會歸還錢，這時候你會怎麼做？</p>
+                    </div>
+
+                    <div id="l3-options" class="space-y-3">
+                        <!-- 動態選項按鈕 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 關卡四：識詐特攻隊 -->
+        <section id="screen-level-4" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-red-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-slate-100">
+                <span class="bg-red-100 text-red-800 font-bold px-3 py-1 rounded-full text-sm">關卡 4 / 5</span>
+                <span class="text-slate-500 font-bold text-sm">【識詐特攻隊】詐騙模組拆解戰</span>
+            </div>
+
+            <p class="text-center font-bold text-slate-700 mb-4">
+                🕵️‍♂️ 扮演小小偵探！檢視手機訊息，找出隱藏的**「詐騙疑點」**！
+            </p>
+
+            <!-- 模擬手機畫面 -->
+            <div class="max-w-md mx-auto bg-slate-900 rounded-3xl p-4 shadow-2xl border-4 border-slate-700">
+                <!-- 手機頂部 -->
+                <div class="flex justify-between text-white text-xs px-2 mb-3">
+                    <span>10:30 AM</span>
+                    <span>📶 📱 100%</span>
+                </div>
+                <!-- 簡訊對話框 -->
+                <div id="l4-chat-box" class="bg-slate-100 rounded-2xl p-4 min-h-[220px] space-y-3">
+                    <!-- 動態簡訊內容 -->
+                </div>
+            </div>
+
+            <!-- 判斷選項 -->
+            <div class="mt-6 flex justify-center gap-4">
+                <button onclick="checkLevel4Answer(true)" class="bg-red-500 hover:bg-red-600 text-white font-black px-6 py-3 rounded-xl shadow-md text-lg flex items-center gap-2">
+                    🚨 這是詐騙訊息！
+                </button>
+                <button onclick="checkLevel4Answer(false)" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black px-6 py-3 rounded-xl shadow-md text-lg flex items-center gap-2">
+                    ✅ 這是安全訊息
+                </button>
+            </div>
+        </section>
+
+        <!-- 5. 關卡五：美好生活市場 -->
+        <section id="screen-level-5" class="hidden bg-white rounded-3xl p-6 shadow-xl border-4 border-teal-200">
+            <div class="flex justify-between items-center mb-4 pb-2 border-b-2 border-slate-100">
+                <span class="bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-full text-sm">關卡 5 / 5</span>
+                <span class="text-slate-500 font-bold text-sm">【美好生活市場】是消費也是公益</span>
+            </div>
+
+            <div class="bg-teal-50 p-4 rounded-2xl mb-4 text-center">
+                <p class="font-bold text-teal-900">🌱 金錢除了買需要的東西，還能透過選擇**「綠色商品」**或**「公益義賣」**改變世界！</p>
+                <p class="text-xs text-teal-700 mt-1">當前社會影響力分數：<span id="l5-impact-score" class="font-black text-amber-600 text-base">0</span> 點</p>
+            </div>
+
+            <div id="l5-question-box">
+                <!-- 動態市場商品選項 -->
+            </div>
+        </section>
+
+        <!-- 6. 遊戲結算與證書 -->
+        <section id="screen-result" class="hidden bg-white rounded-3xl p-6 md:p-10 shadow-xl border-8 border-amber-300 text-center">
+            <div class="text-6xl mb-2">🏆</div>
+            <h2 class="text-3xl font-black text-amber-600 mb-1">恭喜完成理財大冒險！</h2>
+            <p class="text-slate-500 font-bold mb-6">頒發「小小理財冒險王」榮譽證書</p>
+
+            <!-- 證書主體 -->
+            <div class="bg-amber-50 border-4 border-dashed border-amber-300 rounded-2xl p-6 mb-6 max-w-lg mx-auto relative">
+                <div class="text-xl font-bold text-slate-800 mb-2">
+                    茲證明 <span id="certName" class="text-emerald-700 font-black text-2xl underline">小勇士</span> 同學
+                </div>
+                <p class="text-sm text-slate-600 leading-relaxed mb-4">
+                    成功通過「冰箱分類」、「夢想儲蓄」、「神奇信用」、「識詐防禦」及「美好公益」五大考驗，具備良好量入為出、誠實守信與聰明識詐素養！
+                </p>
+                <div class="grid grid-cols-2 gap-2 text-left text-xs bg-white p-3 rounded-xl border border-amber-200">
+                    <div>🌟 總冒險積分：<span id="certScore" class="font-bold text-amber-600">100</span> 分</div>
+                    <div>🏅 榮譽稱號：<span id="certTitle" class="font-bold text-emerald-600">金牌理財大師</span></div>
+                    <div>💧 最終信用指數：<span id="certCredit" class="font-bold text-cyan-600">滿分 (100cc)</span></div>
+                    <div>🌱 社會影響力：<span id="certImpact" class="font-bold text-teal-600">150 點</span></div>
+                </div>
+            </div>
+
+            <button onclick="location.reload()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-lg px-8 py-3 rounded-xl shadow-lg hover:scale-105 transition">
+                🔄 再玩一次挑戰高分！
+            </button>
+        </section>
+
+    </main>
+
+    <!-- 反饋彈窗 Modal -->
+    <div id="feedbackModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl transform scale-95 transition-all">
+            <div id="modalIcon" class="text-5xl mb-3">🎉</div>
+            <h3 id="modalTitle" class="text-2xl font-black text-slate-800 mb-2">答對了！</h3>
+            <p id="modalDesc" class="text-slate-600 text-sm mb-6 leading-relaxed">這是詳細說明內容...</p>
+            <button onclick="closeModal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 rounded-xl shadow">
+                繼續下一題 ➡️
+            </button>
+        </div>
+    </div>
+
+    <footer class="bg-slate-100 border-t text-center py-3 text-xs text-slate-500">
+        國小四年級「金錢規劃與價值觀」課程互動遊戲 ｜ 小小理財冒險王
+    </footer>
+
+    <script>
+        // Web Audio API 音效合成器
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let soundEnabled = true;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(180, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'water') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch(e){}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundToggle').innerText = soundEnabled ? '🔊' : '🔇';
+        }
+
+        // 遊戲狀態 Variables
+        let gameState = {
+            playerName: "小勇士",
+            score: 0,
+            currentLevel: 1,
+            // Level 1 Data
+            l1Index: 0,
+            l1Items: [
+                { icon: '🥛', title: '快過期的鮮奶', desc: '冰箱鮮奶喝完了，成長需要補充鈣質。', type: 'need', exp: '鮮奶是維持基本生理營養的「需要」物品。' },
+                { icon: '✏️', title: '漂亮的自動鉛筆', desc: '雖然抽屜裡已有5支筆，但這隻特別漂亮。', type: 'want', exp: '已有可用的筆，再買漂亮的筆屬於「想要」的慾望。' },
+                { icon: '💊', title: '喉嚨發炎時的藥物', desc: '醫生開的感冒藥物，可以緩解疼痛。', type: 'need', exp: '維持健康恢復健康的藥品是絕對的「需要」。' },
+                { icon: '🍦', title: '酷炫造型冰淇淋', desc: '放學路上看起來很好吃的巧克力聖代。', type: 'want', exp: '冰淇淋是點心享受，屬於「想要」而非生存必需。' },
+                { icon: '🎒', title: '破洞無法用的書包', desc: '上學裝書本必備，舊的已經壞掉拉鍊卡死。', type: 'need', exp: '上學必備的基本工具壞了更換是「需要」。' }
+            ],
+            // Level 2 Data
+            l2Week: 1,
+            l2Savings: 0,
+            l2HasSavedThisWeek: false,
+            // Level 3 Data
+            l3Index: 0,
+            l3Water: 60,
+            l3Scenarios: [
+                { title: '向同學借了 10 元買牛奶...', desc: '你答應隔天還錢，但隔天你忘記帶錢包了，你會？',
+                  opts: [
+                      { text: '誠實主動致歉，並承諾明天一定補還 (+15cc)', delta: 15, exp: '主動誠實說明並及時補救，能維持良好信用！' },
+                      { text: '假裝沒這回事，希望同學自己忘記 (-25cc)', delta: -25, exp: '逃避責任會嚴重損害別人對你的信任！' }
+                  ] 
+                },
+                { title: '答應幫老師發作業本...', desc: '下課時間你想跟朋友去玩下棋，該怎麼辦？',
+                  opts: [
+                      { text: '先將作業本準時發完，再去玩遊戲 (+20cc)', delta: 20, exp: '按時履行承諾是積累信用的金鑰匙！' },
+                      { text: '丟下作業本不管直接跑出去玩 (-30cc)', delta: -30, exp: '爽約放鴿子會讓信用水杯快速漏水！' }
+                  ] 
+                },
+                { title: '向圖書館借了心愛的漫畫書...', desc: '規定一週後要歸還，但你還想繼續看：',
+                  opts: [
+                      { text: '辦理續借手續，按規定使用 (+15cc)', delta: 15, exp: '遵守規則也是展現個人信用的一環！' },
+                      { text: '霸占不還，直到圖書館警告 (-20cc)', delta: -20, exp: '不守時間約定會降低信用額度。' }
+                  ] 
+                }
+            ],
+            // Level 4 Data
+            l4Index: 0,
+            l4Chats: [
+                { text: '恭喜您獲得免費遊戲寶石！請立即點擊網址領取：http://fake-link.com/free', isScam: true, exp: '【不點不明連結】這是典型的網購與釣魚詐騙！' },
+                { text: '媽媽：今天放學記得直接回爺爺家吃飯喔！', isScam: false, exp: '這是來自家人的安全真實訊息。' },
+                { text: '加入飆股老師LINE群組！保證獲利 300%，穩賺不賠！', isScam: true, exp: '【不聽投資明牌】天下沒有「保證獲利穩賺不賠」的好事！' }
+            ],
+            // Level 5 Data
+            l5Index: 0,
+            l5Impact: 0,
+            l5Products: [
+                { q: '選購洗髮精時，你會選擇哪一種？',
+                  a: { name: '廉價化學洗髮精', impact: 0, desc: '普通消費。' },
+                  b: { name: '帶有環保標章的綠色補充包', impact: 50, desc: '支持友善環境、減少塑膠廢棄物！' } 
+                },
+                { q: '班級同樂會購買點心，你會支持：',
+                  a: { name: '合法立案喜憨兒庇護工場的點心', impact: 50, desc: '讓消費結合公益，幫助身障朋友獲得工作機會！' },
+                  b: { name: '普通工廠大量包裝零食', impact: 0, desc: '普通消費。' } 
+                }
+            ]
+        };
+
+        function updateScore(pts) {
+            gameState.score += pts;
+            document.getElementById('scoreVal').innerText = gameState.score;
+        }
+
+        function startGame() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if(name) gameState.playerName = name;
+            document.getElementById('screen-welcome').classList.add('hidden');
+            document.getElementById('screen-level-1').classList.remove('hidden');
+            renderLevel1();
+        }
+
+        function showModal(title, desc, icon='🎉', callback=null) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalIcon').innerText = icon;
+            document.getElementById('feedbackModal').classList.remove('hidden');
+            window.modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('feedbackModal').classList.add('hidden');
+            if(window.modalCallback) {
+                window.modalCallback();
+                window.modalCallback = null;
+            }
+        }
+
+        function renderLevel1() {
+            const item = gameState.l1Items[gameState.l1Index];
+            document.getElementById('l1-item-icon').innerText = item.icon;
+            document.getElementById('l1-item-title').innerText = item.title;
+            document.getElementById('l1-item-desc').innerText = item.desc;
+        }
+
+        function checkLevel1Choice(choice) {
+            const item = gameState.l1Items[gameState.l1Index];
+            if (choice === item.type) {
+                playSound('correct');
+                updateScore(20);
+                showModal('判斷正確！🌟', item.exp, '✅', () => {
+                    nextLevel1Item();
+                });
+            } else {
+                playSound('wrong');
+                showModal('再想想看喔！💡', item.exp, '🤔', () => {
+                    nextLevel1Item();
+                });
+            }
+        }
+
+        function nextLevel1Item() {
+            gameState.l1Index++;
+            if (gameState.l1Index < gameState.l1Items.length) {
+                renderLevel1();
+            } else {
+                // Switch to Level 2
+                document.getElementById('screen-level-1').classList.add('hidden');
+                document.getElementById('screen-level-2').classList.remove('hidden');
+                initLevel2();
+            }
+        }
+
+        function initLevel2() {
+            gameState.l2Week = 1;
+            gameState.l2Savings = 0;
+            renderLevel2Week();
+        }
+
+        function renderLevel2Week() {
+            document.getElementById('l2-week-display').innerText = `第 ${gameState.l2Week} 週`;
+            document.getElementById('l2-savings-display').innerText = `$${gameState.l2Savings} / $700`;
+            
+            const area = document.getElementById('l2-interactive-area');
+            area.innerHTML = '';
+
+            if (!gameState.l2HasSavedThisWeek) {
+                document.getElementById('l2-step-title').innerText = `第 ${gameState.l2Week} 週 - 步驟 1：優先存入「儲蓄金」`;
+                area.innerHTML = `
+                    <div class="text-sm text-slate-600 mb-2">本週收入 $200 元。請先執行【收入 － 儲蓄】：存入 $175 元！</div>
+                    <button onclick="saveForLevel2()" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-xl shadow-md">
+                        🐷 存入 $175 元至豬豬撲滿
+                    </button>
+                `;
+            } else {
+                document.getElementById('l2-step-title').innerText = `第 ${gameState.l2Week} 週 - 步驟 2：處理剩餘支出 ($25 元)`;
+                area.innerHTML = `
+                    <div class="text-sm text-slate-600 mb-2">誘惑出現了！你要如何處置剩餘的 $25 元？</div>
+                    <div class="flex gap-3">
+                        <button onclick="spendForLevel2(true)" class="bg-purple-500 hover:bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-sm">
+                            🥤 買可樂零食 ($25)
+                        </button>
+                        <button onclick="spendForLevel2(false)" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-4 py-2 rounded-xl text-sm">
+                            💰 把剩餘 $25 一併存起來
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function saveForLevel2() {
+            playSound('correct');
+            gameState.l2Savings += 175;
+            gameState.l2HasSavedThisWeek = true;
+            renderLevel2Week();
+        }
+
+        function spendForLevel2(isSpend) {
+            playSound('correct');
+            if (!isSpend) {
+                gameState.l2Savings += 25; // Save extra
+            }
+            gameState.l2HasSavedThisWeek = false;
+            gameState.l2Week++;
+
+            if (gameState.l2Week > 4) {
+                // Check goal
+                if (gameState.l2Savings >= 700) {
+                    updateScore(30);
+                    showModal('儲蓄成功！🏀', `太棒了！你堅持執行「收入 - 儲蓄 = 支出」，一共存了 $${gameState.l2Savings} 元，成功買下籃球！`, '🏆', () => {
+                        document.getElementById('screen-level-2').classList.add('hidden');
+                        document.getElementById('screen-level-3').classList.remove('hidden');
+                        renderLevel3();
+                    });
+                }
+            } else {
+                renderLevel2Week();
+            }
+        }
+
+        function renderLevel3() {
+            const sc = gameState.l3Scenarios[gameState.l3Index];
+            document.getElementById('l3-title').innerText = sc.title;
+            document.getElementById('l3-desc').innerText = sc.desc;
+
+            const optsDiv = document.getElementById('l3-options');
+            optsDiv.innerHTML = '';
+
+            sc.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left bg-cyan-50 hover:bg-cyan-100 border-2 border-cyan-200 font-bold p-4 rounded-xl text-slate-800 transition flex items-center justify-between";
+                btn.innerHTML = `<span>${opt.text}</span> <span class="text-cyan-600">➡️</span>`;
+                btn.onclick = () => selectLevel3Opt(opt);
+                optsDiv.appendChild(btn);
+            });
+
+            updateWaterCupUI();
+        }
+
+        function updateWaterCupUI() {
+            const cup = document.getElementById('waterCup');
+            const text = document.getElementById('waterText');
+            // Clamp water 0-100
+            gameState.l3Water = Math.max(0, Math.min(100, gameState.l3Water));
+            cup.style.height = `${gameState.l3Water}%`;
+            text.innerText = `${gameState.l3Water} cc`;
+
+            if(gameState.l3Water < 30) {
+                cup.style.backgroundColor = '#f87171'; // Red low credit
+            } else {
+                cup.style.backgroundColor = '#22d3ee'; // Cyan normal credit
+            }
+        }
+
+        function selectLevel3Opt(opt) {
+            playSound('water');
+            gameState.l3Water += opt.delta;
+            updateWaterCupUI();
+
+            if (opt.delta > 0) updateScore(20);
+
+            showModal(opt.delta > 0 ? '信用提升！💧' : '信用流失！⚠️', opt.exp, opt.delta > 0 ? '✨' : '💔', () => {
+                gameState.l3Index++;
+                if (gameState.l3Index < gameState.l3Scenarios.length) {
+                    renderLevel3();
+                } else {
+                    document.getElementById('screen-level-3').classList.add('hidden');
+                    document.getElementById('screen-level-4').classList.remove('hidden');
+                    renderLevel4();
+                }
+            });
+        }
+
+        function renderLevel4() {
+            const chat = gameState.l4Chats[gameState.l4Index];
+            const box = document.getElementById('l4-chat-box');
+            
+            box.innerHTML = `
+                <div class="flex gap-2 items-start">
+                    <div class="w-8 h-8 rounded-full bg-slate-400 flex items-center justify-center text-white text-xs font-bold">訊</div>
+                    <div class="bg-white border p-3 rounded-2xl rounded-tl-none max-w-[80%] text-sm text-slate-800 shadow-sm">
+                        ${chat.text}
+                    </div>
+                </div>
+            `;
+        }
+
+        function checkLevel4Answer(isScamChoice) {
+            const chat = gameState.l4Chats[gameState.l4Index];
+            if (isScamChoice === chat.isScam) {
+                playSound('correct');
+                updateScore(25);
+                showModal('火眼金睛！🔍', chat.exp, '🕵️‍♂️', () => {
+                    nextLevel4();
+                });
+            } else {
+                playSound('wrong');
+                showModal('注意疑點喔！⚠️', chat.exp, '🚨', () => {
+                    nextLevel4();
+                });
+            }
+        }
+
+        function nextLevel4() {
+            gameState.l4Index++;
+            if (gameState.l4Index < gameState.l4Chats.length) {
+                renderLevel4();
+            } else {
+                document.getElementById('screen-level-4').classList.add('hidden');
+                document.getElementById('screen-level-5').classList.remove('hidden');
+                renderLevel5();
+            }
+        }
+
+        function renderLevel5() {
+            const item = gameState.l5Products[gameState.l5Index];
+            const box = document.getElementById('l5-question-box');
+
+            box.innerHTML = `
+                <h4 class="font-bold text-lg text-slate-800 text-center mb-4">${item.q}</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="selectLevel5(false)" class="bg-slate-50 border-2 border-slate-200 hover:border-teal-400 p-5 rounded-2xl font-bold text-left hover:shadow-md transition">
+                        🛒 ${item.a.name}
+                    </button>
+                    <button onclick="selectLevel5(true)" class="bg-emerald-50 border-2 border-emerald-300 hover:border-emerald-500 p-5 rounded-2xl font-bold text-left hover:shadow-md transition">
+                        🌱 ${item.b.name}
+                    </button>
+                </div>
+            `;
+            document.getElementById('l5-impact-score').innerText = gameState.l5Impact;
+        }
+
+        function selectLevel5(isEcoChoice) {
+            playSound('correct');
+            const item = gameState.l5Products[gameState.l5Index];
+            const choice = isEcoChoice ? item.b : item.a;
+
+            gameState.l5Impact += choice.impact;
+            if(choice.impact > 0) updateScore(25);
+
+            document.getElementById('l5-impact-score').innerText = gameState.l5Impact;
+
+            showModal(choice.impact > 0 ? '創造社會價值！🌍' : '完成選擇！🛒', choice.desc, choice.impact > 0 ? '💚' : '👍', () => {
+                gameState.l5Index++;
+                if (gameState.l5Index < gameState.l5Products.length) {
+                    renderLevel5();
+                } else {
+                    showFinalResult();
+                }
+            });
+        }
+
+        function showFinalResult() {
+            document.getElementById('screen-level-5').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+
+            document.getElementById('certName').innerText = gameState.playerName;
+            document.getElementById('certScore').innerText = gameState.score;
+            document.getElementById('certCredit').innerText = `${gameState.l3Water} cc`;
+            document.getElementById('certImpact').innerText = `${gameState.l5Impact} 點`;
+            
+            let title = "理財新星小勇士";
+            if (gameState.score >= 100) title = "🏆 卓越理財大師";
+            else if (gameState.score >= 70) title = "🌟 聰明理財冒險王";
+            document.getElementById('certTitle').innerText = title;
+        }
+    </script>
+</body>
+</html>
